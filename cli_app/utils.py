@@ -1,3 +1,4 @@
+"""This module holds frequent util methods"""
 from cli_app.cache import CacheManager
 import requests
 import re
@@ -20,7 +21,7 @@ def get_censys_credentials():
     """
     cache = CacheManager()
     if cache.has_key(CREDENTIALS_KEY):
-        return cache.get(key=CREDENTIALS_KEY).split('|')
+        return cache.get(key=CREDENTIALS_KEY)
 
 
 def parse_website_content(source):
@@ -28,16 +29,20 @@ def parse_website_content(source):
     Make a request to the ipv4/domain website and extract the title and top 10 keywords using BeautifulSoup.
     """
     website_url = 'http://%s' % source
-    response = requests.get(website_url)
+    session = requests.session()
+    response = session.get(website_url)
     if response.ok:
-        page_content = response.content
-        soup = BeautifulSoup(page_content)
-        page_text = soup.findAll(text=True)
-        visible_texts = filter(visible, page_text)
+        page_content = response.text
+        soup = BeautifulSoup(page_content, 'html.parser')
+        for script in soup(["script", "style"]):
+            script.extract()
 
-        print soup.title, visible_texts
-        print '\n\n'
-        return {'title': soup.title, 'keywords': []}
+        print soup.get_text()
+
+        #page_text = soup.findAll(text=True)
+        #visible_texts = filter(visible, page_text)
+
+        return {'title': soup.title, 'keywords': soup.get_text().split()}
     return response.status_code, response.content
 
 

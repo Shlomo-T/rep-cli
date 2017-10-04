@@ -1,9 +1,8 @@
+"""This module will use censys library to work against their api"""
 from censys.websites import CensysWebsites
 
 
 class CensysWebsitesAdapter(object):
-
-    websites_api = CensysWebsites()
 
     def __init__(self, api_id, api_secret):
         self.websites_api = CensysWebsites(api_id=api_id, api_secret=api_secret)
