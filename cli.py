@@ -3,9 +3,10 @@ from cli_app.censys_adapter import CensysWebsitesAdapter
 from censys.base import CensysUnauthorizedException
 from cli_app.utils import *
 
+
 @click.group()
 def cli():
-    """rep cli built in order to let users research easily about ipv4 addresses and domains using censys service"""
+    """rep cli built in order to let users research easily about ipv4 addresses and domains using Censys services"""
     pass
 
 
@@ -13,11 +14,9 @@ def cli():
 @click.argument('censys-credentials')
 def configure(censys_credentials):
     """
-    Stores your Censys credentials locally for sending Censys api requests
-    :param censys_credentials:  help='Censys credentials in the format of <api-id>|<api-secret>'
-    :return:
+    Stores your Censys credentials locally for sending Censys api requests.
+    censys_credentials: Censys credentials in the format of <api-id>|<api-secret>
     """
-    # TODO: store credentials in local cache
     credentials = censys_credentials.split('|')
     if len(credentials) == 2 and '' not in credentials:
         try:
@@ -29,7 +28,6 @@ def configure(censys_credentials):
             click.echo('Failed to authenticate your credentials: %s' % e.message)
         except Exception as e:
             click.echo('Something messed up: %s' % e.message)
-            print e
         return
     click.echo('Credentials not in the format!')
 
@@ -39,33 +37,34 @@ def configure(censys_credentials):
 @click.argument('source')
 def scan(nocache, source):
     """
-    Scan the source to detect if its a website. In case it does return title and top 10 words on the website.
-    --nocache flag detemines if to pull/store results in inner cache.
-    :param nocache:
-    :param source: 'ipv4 or domain address to scan'
-    :return:
+    Scan web source to detect if its a website (the source must be ipv4 address or a domain).
+    In case it does a website, the source will be scanned and the title and top 10 keywords will return back as a result
+    --nocache: flag that determines if to pull/store results in inner cache.
     """
-    #TODO: detect if the source is valid website or not, in case it does process the website and return result,
-    # otherwise echo message to notify the user about the source
-
     censys_credentials = get_censys_credentials()
+    if not censys_credentials:
+        click.echo('You must provide censys credentials!')
+        return
     censys_adapter = CensysWebsitesAdapter(*censys_credentials)
-    if censys_adapter.is_website(source):
+    cache = CacheManager()
+    # If the source already saved to cache return it to the user (better performance even if --nocache supplied as True)
+    if cache.has_key(source):
+        result = cache.get(source)
+        click.echo('Result : %s' % result)
+    elif censys_adapter.website_detection(source):
         result = parse_website_content(source)
         if not nocache:
-            cache = CacheManager()
             cache.set(source, result)
-            cache.close()
             click.echo("Results saved to cache")
         click.echo('Result : %s' % result)
-        return
-    click.echo("This source is not a website.")
+    else:
+        click.echo("This source is not a website.")
+    cache.close()
 
 @cli.command()
 def clear_cache():
     """
     Clear all saved results from cache.
-    :return:
     """
     cache = CacheManager()
     result = cache.clear_cache()
