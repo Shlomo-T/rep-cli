@@ -1,7 +1,7 @@
 """This module holds frequent util methods"""
 from cli_app.cache import CacheManager
 import requests
-import re
+import collections
 from bs4 import BeautifulSoup
 
 CREDENTIALS_KEY = 'censys_credentials'
@@ -36,19 +36,10 @@ def parse_website_content(source):
         soup = BeautifulSoup(page_content, 'html.parser')
         for script in soup(["script", "style"]):
             script.extract()
-
-        print soup.get_text()
-
-        #page_text = soup.findAll(text=True)
-        #visible_texts = filter(visible, page_text)
-
-        return {'title': soup.title, 'keywords': soup.get_text().split()}
+        words = soup.get_text().split()
+        words_counter = collections.Counter(words)
+        # Extract top 10 keywords from counter
+        top_10_keywords = map(lambda keyword_count: keyword_count[0], words_counter.most_common(10))
+        return {'title': soup.title.get_text(), 'keywords': top_10_keywords}
     return response.status_code, response.content
 
-
-def visible(element):
-    if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
-        return False
-    elif re.match('<!--.*-->', unicode(element)):
-        return False
-    return True
