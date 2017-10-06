@@ -2,3 +2,4 @@ venv
 *.pyc
 .idea
 *.egg-info
+cache
