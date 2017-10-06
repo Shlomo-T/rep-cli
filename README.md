@@ -31,7 +31,7 @@ rep
 First step when working with rep is to configure Censys credentials, rep expecting to receive them in the format of
  <api-id>|<api-secret>
 ```
-rep configure '<api-id>|<api-secret>'
+rep configure 'api-id|api-secret'
 ```
 
 After credentials have been set 'scan' command is available and you can scan domains and ipv4 addresses.
