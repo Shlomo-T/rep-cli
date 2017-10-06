@@ -28,13 +28,14 @@ After installation check that rep cli is really working, you should see short ex
 rep
 ```
 
-First step when working with rep is to configure Censys credentials, rep expecting to receive them in the format of <api-id>|<api-secret>
+First step when working with rep is to configure Censys credentials, rep expecting to receive them in the format of
+ <api-id>|<api-secret>
 ```
 rep configure '<api-id>|<api-secret>'
 ```
 
 After credentials have been set 'scan' command is available and you can scan domains and ipv4 addresses.
-The result should retrieve the website title and top 10 keywords and by default would be saved to cache for 10 min.
+The result should retrieve the website title and top 10 keywords that by default would be saved to cache for 10 min.
 In order to prevent caching use --nocache flag and set it to true
 ```
 rep scan google.com --nocache=true
